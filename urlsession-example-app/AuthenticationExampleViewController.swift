@@ -10,15 +10,10 @@ import UIKit
 
 class AuthenticationExampleViewController: UIViewController {
     @IBOutlet var label: UILabel!
-    var session: URLSession!
 
-    override func viewDidLoad() {
-        super.viewDidLoad()
-
-        let configuration = URLSessionConfiguration.default
-
-        session = URLSession(configuration: configuration, delegate: self, delegateQueue: .main)
-    }
+    lazy var session: URLSession = {
+        return URLSession(configuration: .default, delegate: self, delegateQueue: .main)
+    }()
 
     @IBAction func revealSecret(_ sender: Any) {
         let url = URL(string: "http://localhost:8080/secret")!
@@ -29,16 +24,13 @@ class AuthenticationExampleViewController: UIViewController {
 }
 
 extension AuthenticationExampleViewController: URLSessionDataDelegate {
-    func urlSession(_ session: URLSession,
-                    task: URLSessionTask,
-                    didReceive challenge: URLAuthenticationChallenge,
-                    completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
-        let credential = URLCredential(user: "admin", password: "password", persistence: .none)
+    func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+        if let error = error{
+            label.text = error.localizedDescription
+        }
 
-        completionHandler(.useCredential, credential)
-    }
-
-    func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
-        label.text = String(data: data, encoding: .utf8)
+        if let response = task.response as? HTTPURLResponse {
+            label.text = "Status: \(response.statusCode)"
+        }
     }
 }

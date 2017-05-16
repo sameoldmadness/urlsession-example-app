@@ -12,16 +12,6 @@ class GetExampleViewController: UIViewController {
     @IBOutlet var imageView: UIImageView!
 
     @IBAction func buttonClicked(_ sender: Any) {
-        let url = URL(string: "http://localhost:8080/public/apple.jpg")!
-
-        let task = URLSession.shared.dataTask(with: url) {
-            data, response, error in
-
-            DispatchQueue.main.async {
-                self.imageView.image = UIImage(data: data!)
-            }
-        }
-
-        task.resume()
+        let img = "http://localhost:8080/public/apple.jpg"
     }
 }

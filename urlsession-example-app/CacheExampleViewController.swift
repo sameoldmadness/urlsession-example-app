@@ -11,20 +11,17 @@ import UIKit
 class CacheExampleViewController: UIViewController {
     @IBOutlet var imageView: UIImageView!
 
-    var session: URLSession!
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-
+    lazy var session: URLSession = {
         let configuration = URLSessionConfiguration.default
 
-        configuration.urlCache = URLCache.shared
-        configuration.requestCachePolicy = .returnCacheDataElseLoad
+        configuration.urlCache = URLCache(memoryCapacity: 100 * 1024 * 1024,
+                                          diskCapacity: 100 * 1024 * 1024,
+                                          diskPath: nil)
 
-//        configuration.allowsCellularAccess = False
+        configuration.requestCachePolicy = .useProtocolCachePolicy
 
-        session = URLSession(configuration: configuration, delegate: self, delegateQueue: .main)
-    }
+        return URLSession(configuration: configuration)
+    }()
 
     @IBAction func clearCache(_ sender: Any) {
         session.configuration.urlCache!.removeAllCachedResponses()
@@ -33,21 +30,12 @@ class CacheExampleViewController: UIViewController {
     @IBAction func buttonClicked(_ sender: Any) {
         let url = URL(string: "http://localhost:8080/public/apple.jpg")!
 
-        let task = session.dataTask(with: url)
+        let task = session.dataTask(with: url) { data, _, _ in
+            DispatchQueue.main.async {
+                self.imageView.image = UIImage(data: data!)
+            }
+        }
 
         task.resume()
-    }
-}
-
-extension CacheExampleViewController: URLSessionDataDelegate {
-    func urlSession(_ session: URLSession,
-                    dataTask: URLSessionDataTask,
-                    willCacheResponse proposedResponse: CachedURLResponse,
-                    completionHandler: @escaping (CachedURLResponse?) -> Void) {
-        completionHandler(proposedResponse)
-    }
-
-    func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
-        imageView.image = UIImage(data: data)
     }
 }

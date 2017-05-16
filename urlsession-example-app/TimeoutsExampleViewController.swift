@@ -11,29 +11,18 @@ import UIKit
 class TimeoutsExampleViewController: UIViewController {
     @IBOutlet var status: UILabel!
 
-    var session: URLSession!
-    var task: URLSessionTask?
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-
+    lazy var session: URLSession = {
         let configuration = URLSessionConfiguration.default
 
-//        configuration.timeoutIntervalForRequest
-        configuration.timeoutIntervalForResource = 5
-
-        session = URLSession(configuration: configuration)
-    }
+        return URLSession(configuration: configuration)
+    }()
 
     @IBAction func ping(_ sender: Any) {
-        task?.cancel()
-
         status.text = "pending"
 
         let url = URL(string: "http://localhost:8080/ping")!
 
-
-        task = session.dataTask(with: url) {
+        let task = session.dataTask(with: url) {
             data, response, error in
 
             DispatchQueue.main.async {
@@ -45,6 +34,6 @@ class TimeoutsExampleViewController: UIViewController {
             }
         }
 
-        task?.resume()
+        task.resume()
     }
 }

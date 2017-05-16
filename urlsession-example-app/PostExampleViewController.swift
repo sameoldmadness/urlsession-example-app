@@ -12,41 +12,15 @@ class PostExampleViewController: UIViewController {
     @IBOutlet var textField: UITextField!
     @IBOutlet var label: UITextView!
 
-    @IBAction func buttonClicked(_ sender: Any) {
+    @IBAction func send() {
         let message = textField.text!
-
-        sendMessage(message)
-    }
-
-    var session: URLSession!
-
-    override func viewDidLoad() {
-        session = URLSession(configuration: .default)
-
-        loadMessages()
-    }
-
-    func sendMessage(_ message: String) {
         let url = URL(string: "http://localhost:8080/message")!
-        var request = URLRequest(url: url)
-
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = try! JSONSerialization.data(withJSONObject: ["message": message])
-
-        let task = session.dataTask(with: request) {
-            data, response, error in
-
-            self.loadMessages()
-        }
-
-        task.resume()
     }
 
-    func loadMessages() {
+    @IBAction func reload() {
         let url = URL(string: "http://localhost:8080/messages")!
 
-        let task = session.dataTask(with: url) {
+        let task = URLSession.shared.dataTask(with: url) {
             data, response, error in
 
             if let data = data,
