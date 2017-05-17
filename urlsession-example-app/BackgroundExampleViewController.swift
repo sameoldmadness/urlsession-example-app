@@ -12,10 +12,15 @@ class BackgroundExampleViewController: UIViewController {
     @IBOutlet var imageView: UIImageView!
     @IBOutlet var rateLabel: UILabel!
 
-    lazy var session: URLSession = {
-        let configuration = URLSessionConfiguration.background(withIdentifier: "large-image")
+    @IBAction func reset() {
+        imageView.image = nil
+        rateLabel.text = "0%"
+    }
 
-        configuration.urlCache = nil
+    lazy var session: URLSession = {
+        let configuration = URLSessionConfiguration.default
+
+        configuration.requestCachePolicy = .reloadIgnoringLocalCacheData
 
         let session = URLSession(configuration: configuration, delegate: self, delegateQueue: .main)
 
@@ -23,8 +28,7 @@ class BackgroundExampleViewController: UIViewController {
     }()
 
     @IBAction func downloadLargeImage(_ sender: Any) {
-        imageView.image = nil
-        rateLabel.text = "0%"
+        reset()
 
         let url = URL(string: "https://unsplash.com/photos/7nrsVjvALnA/download?force=true")!
         let task = session.downloadTask(with: url)
@@ -51,12 +55,13 @@ extension BackgroundExampleViewController: URLSessionDownloadDelegate {
     }
 
     func urlSessionDidFinishEvents(forBackgroundURLSession session: URLSession) {
-        if let appDelegate = UIApplication.shared.delegate as? AppDelegate {
-            if let completionHandler = appDelegate.backgroundSessionCompletionHandler {
-                appDelegate.backgroundSessionCompletionHandler = nil
-                DispatchQueue.main.async {
-                    completionHandler()
-                }
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate
+
+        if let completionHandler = appDelegate.backgroundSessionCompletionHandler {
+            appDelegate.backgroundSessionCompletionHandler = nil
+
+            DispatchQueue.main.async {
+                completionHandler()
             }
         }
     }
